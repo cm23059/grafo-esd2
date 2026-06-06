@@ -8,6 +8,39 @@ use definicion::RedDeTransporte;
 use bfs::{bfs_ruta_corta, imprimir_ruta};
 use red_predefinida::crear_red_predefinida;
 
+fn leer_linea(prompt: &str) -> String {
+    print!("{}", prompt);
+    io::stdout().flush().unwrap();
+    let mut buf = String::new();
+    io::stdin().read_line(&mut buf).unwrap();
+    buf.trim().to_string()
+}
+
+fn leer_numero(prompt: &str) -> Option<i32> {
+    leer_linea(prompt).parse::<i32>().ok()
+}
+
+fn buscar_nodo(red: &RedDeTransporte, entrada: &str) -> Option<NodeIndex> {
+    if let Ok(n) = entrada.trim().parse::<usize>() {
+        if n < red.grafo.node_count() {
+            return Some(NodeIndex::new(n));
+        }
+    }
+    red.grafo
+        .node_indices()
+        .find(|&i| red.grafo[i].to_lowercase() == entrada.to_lowercase())
+}
+
+fn listar_nodos(red: &RedDeTransporte) {
+    println!("\n  Nodos en la red:");
+    for idx in red.grafo.node_indices() {
+        println!("    [{}] {}", idx.index(), red.grafo[idx]);
+    }
+}
+
+fn to_static(s: String) -> &'static str {
+    Box::leak(s.into_boxed_str())
+}
 
 fn construir_red_personalizada() -> RedDeTransporte {
     let mut red = RedDeTransporte::new();
@@ -121,5 +154,58 @@ fn menu_buscar_ruta(red: &RedDeTransporte) {
             "\n  ✘ No existe ruta de \"{}\" a \"{}\" en esta red.",
             origen_nombre, destino_nombre
         ),
+    }
+}
+
+
+fn menu_red(red: &mut RedDeTransporte, nombre_red: &str) {
+    loop {
+        println!("\n  ══════════════════════════════════════");
+        println!("   Red activa: {}", nombre_red);
+        println!("  ══════════════════════════════════════");
+        println!("   1. Ver grafo (formato DOT)");
+        println!("   2. Listar nodos");
+        println!("   3. Buscar ruta más corta");
+        println!("   4. Volver al menú principal");
+        println!("  ──────────────────────────────────────");
+
+        match leer_linea("  Opción: ").as_str() {
+            "1" => red.mostrar_grafo(),
+            "2" => listar_nodos(red),
+            "3" => menu_buscar_ruta(red),
+            "4" => break,
+            _   => println!("  ! Opción no válida."),
+        }
+    }
+}
+
+
+fn main() {
+    println!("\n  ╔══════════════════════════════════════╗");
+    println!("  ║     Red de Transporte — BFS          ║");
+    println!("  ╚══════════════════════════════════════╝");
+
+    loop {
+        println!("\n  ── Menú principal ─────────────────────");
+        println!("   1. Usar red predefinida");
+        println!("   2. Crear red personalizada");
+        println!("   3. Salir");
+        println!("  ───────────────────────────────────────");
+
+        match leer_linea("  Opción: ").as_str() {
+            "1" => {
+                let mut red = crear_red_predefinida();
+                menu_red(&mut red, "Predefinida");
+            }
+            "2" => {
+                let mut red = construir_red_personalizada();
+                menu_red(&mut red, "Personalizada");
+            }
+            "3" => {
+                println!("\n  Hasta luego.\n");
+                break;
+            }
+            _ => println!("  ! Opción no válida."),
+        }
     }
 }
