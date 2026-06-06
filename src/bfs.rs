@@ -36,9 +36,26 @@ pub fn bfs_ruta_corta(red: &RedDeTransporte, inicio: NodeIndex, destino: NodeInd
 }
 
 pub fn imprimir_ruta(red: &RedDeTransporte, ruta: Vec<NodeIndex>) {
-    let nombres: Vec<&str> = ruta.iter()
-        .map(|&idx| red.grafo[idx])
-        .collect();
-    
-    println!("Ruta encontrada ({} paradas): {}", nombres.len(), nombres.join(" -> "));
+let nombres: Vec<&str> = ruta.iter()
+.map(|&idx| red.grafo[idx])
+.collect();
+ 
+let origen  = nombres.first().unwrap();
+let destino = nombres.last().unwrap();
+let paradas_intermedias = &nombres[1..nombres.len() - 1];
+ 
+println!("\n  Ruta encontrada:");
+println!("  Origen:  {}", origen);
+ 
+if paradas_intermedias.is_empty() {
+    println!("  Paradas intermedias: ninguna (conexion directa)");
+} else {
+    println!("  Paradas intermedias ({}):", paradas_intermedias.len());
+    for (i, parada) in paradas_intermedias.iter().enumerate() {
+        println!("    {}. {}", i + 1, parada);
+    }
+}
+ 
+println!("  Destino: {}", destino);
+println!("  Camino completo: {}", nombres.join(" -> "));
 }
